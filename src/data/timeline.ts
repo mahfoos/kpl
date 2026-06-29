@@ -1,0 +1,60 @@
+import type { TimelineStep } from "@/types";
+
+export const timeline: TimelineStep[] = [
+  {
+    id: "t1",
+    title: "Team Registration",
+    description: "All 8 franchises officially confirmed and onboarded.",
+    date: "Jun 1, 2026",
+    status: "completed",
+    icon: "ShieldCheck",
+  },
+  {
+    id: "t2",
+    title: "Player Registration",
+    description: "208 players registered and verified for the auction pool.",
+    date: "Jun 20, 2026",
+    status: "completed",
+    icon: "UserCheck",
+  },
+  {
+    id: "t3",
+    title: "Mega Auction",
+    description: "Franchises bid to build their dream squads.",
+    date: "Jul 4, 2026",
+    status: "upcoming",
+    icon: "Gavel",
+  },
+  {
+    id: "t4",
+    title: "Squad Announcement",
+    description: "Final squads revealed to fans across Kinniya.",
+    date: "Jul 6, 2026",
+    status: "upcoming",
+    icon: "Users",
+  },
+  {
+    id: "t5",
+    title: "Fixtures Release",
+    description: "The full season schedule and match-ups go live.",
+    date: "Jul 11, 2026",
+    status: "upcoming",
+    icon: "CalendarDays",
+  },
+  {
+    id: "t6",
+    title: "Tournament Begins",
+    description: "The first ball of KPL is bowled. Let the battle begin.",
+    date: "Jul 18, 2026",
+    status: "upcoming",
+    icon: "Flame",
+  },
+  {
+    id: "t7",
+    title: "Grand Final",
+    description: "Two teams. One trophy. A champion is crowned.",
+    date: "Aug 9, 2026",
+    status: "final",
+    icon: "Trophy",
+  },
+];

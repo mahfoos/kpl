@@ -1,65 +1,58 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Wifi, WifiOff } from "lucide-react";
+import { LedTicker } from "@/components/auction/LedTicker";
+import { TopBillboard } from "@/components/auction/TopBillboard";
+import { LiveStage } from "@/components/auction/LiveStage";
+import { TeamPurseStrip } from "@/components/auction/TeamPurseStrip";
+import { useAuctionState } from "@/hooks/useAuctionState";
+
+export default function LiveScreen() {
+  const { state, connected } = useAuctionState();
+
+  const tickerItems = [
+    "KINNIYA PREMIER LEAGUE",
+    "SEASON 1 · 2026",
+    "MEGA AUCTION LIVE",
+    state?.lastEvent ?? "208 PLAYERS · 8 TEAMS · ONE CHAMPION",
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="flex min-h-[100svh] flex-col bg-ink">
+      <LedTicker items={tickerItems} />
+      <TopBillboard />
+
+      {/* Connection status */}
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-end px-4 py-3 sm:px-6">
+        <span
+          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${
+            connected
+              ? "border-green-500/30 bg-green-500/10 text-green-400"
+              : "border-red-500/30 bg-red-500/10 text-red-400"
+          }`}
+        >
+          {connected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+          {connected ? "Live" : "Reconnecting…"}
+        </span>
+      </div>
+
+      {/* Stage */}
+      <section className="mx-auto flex w-full max-w-7xl flex-1 items-center px-4 py-6 sm:px-6">
+        <div className="w-full">
+          <LiveStage state={state} />
+        </div>
+      </section>
+
+      {/* Team purse board — sliding strip of crest cards */}
+      <section className="w-full pb-8">
+        <p className="mx-auto mb-3 max-w-7xl px-4 text-xs font-bold uppercase tracking-[0.3em] text-white/40 sm:px-6">
+          Team Purses · 75,000 each
+        </p>
+        <TeamPurseStrip
+          state={state}
+          highlightTeamId={state?.current?.leadingTeamId}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
