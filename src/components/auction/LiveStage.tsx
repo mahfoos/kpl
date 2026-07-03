@@ -6,7 +6,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Gavel, Radio, Sparkles, Trophy, User } from "lucide-react";
 import { players } from "@/data/players";
 import { teams } from "@/data/teams";
+import { CountdownTimer } from "@/components/CountdownTimer";
 import { DEFAULT_BASE_PRICE, formatAmount, formatMoney } from "@/lib/auction-config";
+import { MEGA_AUCTION_DATE } from "@/lib/utils";
 import type { AuctionState } from "@/types";
 
 const playerById = new Map(players.map((p) => [p.id, p]));
@@ -140,12 +142,22 @@ export function LiveStage({ state }: { state: AuctionState | null }) {
                 backgroundColor: `${leadTeam.primary}1a`,
               }}
             >
-              <span
-                className="grid size-11 place-items-center rounded-xl font-display text-base font-extrabold text-navy"
-                style={{ backgroundColor: leadTeam.primary }}
-              >
-                {leadTeam.initials}
-              </span>
+              {leadTeam.logo ? (
+                <Image
+                  src={leadTeam.logo}
+                  alt={leadTeam.name}
+                  width={44}
+                  height={44}
+                  className="size-11 rounded-xl object-cover ring-1 ring-white/20"
+                />
+              ) : (
+                <span
+                  className="grid size-11 place-items-center rounded-xl font-display text-base font-extrabold text-navy"
+                  style={{ backgroundColor: leadTeam.primary }}
+                >
+                  {leadTeam.initials}
+                </span>
+              )}
               <div className="text-left">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">
                   {sold ? "Bought by" : "Leading bidder"}
@@ -297,7 +309,17 @@ function SoldCelebration({
             backgroundColor: `${team.primary}22`,
           }}
         >
-          <Trophy className="size-6" style={{ color: team.primary }} />
+          {team.logo ? (
+            <Image
+              src={team.logo}
+              alt={team.name}
+              width={48}
+              height={48}
+              className="size-12 rounded-xl object-cover ring-2 ring-white/20"
+            />
+          ) : (
+            <Trophy className="size-6" style={{ color: team.primary }} />
+          )}
           <div className="text-left">
             <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
               Bought by
@@ -360,6 +382,14 @@ function IdleStage() {
         </p>
       </div>
 
+      {/* Countdown to the mega auction */}
+      <div className="flex flex-col items-center">
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.4em] text-gold">
+          Auction Starts In
+        </p>
+        <CountdownTimer targetIso={MEGA_AUCTION_DATE} size="lg" className="mx-auto" />
+      </div>
+
       {/* Chief guest strip */}
       <div className="glass flex items-center gap-4 rounded-2xl px-5 py-3">
         <Image
@@ -367,7 +397,7 @@ function IdleStage() {
           alt="Imran Maharoof"
           width={56}
           height={56}
-          className="size-14 rounded-full object-cover ring-2 ring-gold/50"
+          className="size-14 rounded-full object-cover object-top ring-2 ring-gold/50"
         />
         <div className="text-left">
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Lock } from "lucide-react";
 import { teams } from "@/data/teams";
@@ -33,12 +34,22 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
         />
         {/* Crest */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="font-display text-5xl font-extrabold tracking-tight drop-shadow-lg transition-transform duration-500 group-hover:scale-110"
-            style={{ color: team.primary }}
-          >
-            {team.initials}
-          </span>
+          {team.logo ? (
+            <Image
+              src={team.logo}
+              alt={team.name}
+              width={112}
+              height={112}
+              className="size-28 rounded-2xl object-cover shadow-lg ring-2 ring-white/20 transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <span
+              className="font-display text-5xl font-extrabold tracking-tight drop-shadow-lg transition-transform duration-500 group-hover:scale-110"
+              style={{ color: team.primary }}
+            >
+              {team.initials}
+            </span>
+          )}
         </div>
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
       </div>

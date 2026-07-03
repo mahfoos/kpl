@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { teams } from "@/data/teams";
 import { TEAM_BUDGET, formatAmount } from "@/lib/auction-config";
 import type { AuctionState, Team } from "@/types";
@@ -129,8 +130,19 @@ function PurseCard({
   );
 }
 
-/** Club-style circular crest built from the team's colours + initials. */
+/** Team crest — the real logo if we have one, else a colour-built initials badge. */
 function TeamCrest({ team }: { team: Team }) {
+  if (team.logo) {
+    return (
+      <Image
+        src={team.logo}
+        alt={team.name}
+        width={80}
+        height={80}
+        className="size-20 rounded-2xl object-cover shadow-lg ring-2 ring-white/20"
+      />
+    );
+  }
   return (
     <div
       className="grid size-20 place-items-center rounded-full border-[3px] shadow-lg"

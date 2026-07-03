@@ -33,7 +33,7 @@ function Segment() {
           alt="Imran Maharoof"
           width={88}
           height={88}
-          className="size-[88px] shrink-0 rounded-full object-cover ring-4 ring-gold/60"
+          className="size-[88px] shrink-0 rounded-full object-cover object-top ring-4 ring-gold/60"
         />
         <div className="whitespace-nowrap">
           <p className="text-sm font-bold uppercase tracking-[0.4em] text-electric">

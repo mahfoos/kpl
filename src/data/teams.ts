@@ -11,6 +11,7 @@ export const teams: Team[] = [
     initials: "KW",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/kurinchakeny-warriors.jpg",
   },
   {
     id: "mancholai-strikers",
@@ -22,6 +23,7 @@ export const teams: Team[] = [
     initials: "MS",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/mancholai-strikers.jpg",
   },
   {
     id: "soorangal-super-kings",
@@ -33,6 +35,7 @@ export const teams: Team[] = [
     initials: "SSK",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/soorangal-super-kings.jpg",
   },
   {
     id: "faizal-nagar-force",
@@ -44,17 +47,19 @@ export const teams: Team[] = [
     initials: "FNF",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/faizal-nagar-force.jpg",
   },
   {
     id: "elilarangu-eagles",
-    name: "Elilarangu Eagles",
-    shortName: "Eagles",
-    city: "Elilarangu",
-    primary: "#a855f7",
-    secondary: "#2e1065",
-    initials: "EE",
+    name: "Rahmaniya Royal",
+    shortName: "Royal",
+    city: "Rahmaniya",
+    primary: "#c9a24b",
+    secondary: "#0b1f3a",
+    initials: "RR",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/rahmaniya-royal.jpg",
   },
   {
     id: "buhariyadi-blasters",
@@ -66,6 +71,7 @@ export const teams: Team[] = [
     initials: "BB",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/buhariyadi-blasters.jpg",
   },
   {
     id: "mahroof-nagar-riders",
@@ -77,6 +83,7 @@ export const teams: Team[] = [
     initials: "MNR",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/mahroof-nagar-riders.jpg",
   },
   {
     id: "kuttikarachi-lions",
@@ -88,5 +95,6 @@ export const teams: Team[] = [
     initials: "KL",
     squadStatus: "Squad Coming Soon",
     auctionStatus: "Mega Auction Pending",
+    logo: "/teams/kuttikarachi-lions.jpg",
   },
 ];

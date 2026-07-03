@@ -47,7 +47,7 @@ export function ChiefGuestSection() {
                   width={276}
                   height={276}
                   priority
-                  className="size-56 object-cover sm:size-64"
+                  className="size-56 object-cover object-top sm:size-64"
                 />
               </div>
             </div>
