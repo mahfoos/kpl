@@ -1,5 +1,6 @@
 import { reduce } from "@/lib/auction-reducer";
 import { readSnapshot, writeSnapshot } from "@/lib/auction-snapshot";
+import { fetchPlayers } from "@/lib/players-db";
 import { CORS_HEADERS, withCors } from "@/lib/cors";
 import type { AuctionAction } from "@/types";
 
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const current = await readSnapshot();
-    const result = reduce(current, body);
+    const roster = await fetchPlayers();
+    const current = await readSnapshot(roster);
+    const result = reduce(current, body, roster);
     if (result.changed) await writeSnapshot(result.state);
     return Response.json(
       { ok: result.ok, error: result.error, state: result.state },

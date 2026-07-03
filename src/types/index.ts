@@ -28,6 +28,8 @@ export interface Player {
   status: string;
   /** Optional promo card image under /public, e.g. "/auction/rijas.jpg" */
   image?: string;
+  /** Player's home club, e.g. "Kins National". */
+  club?: string;
 }
 
 // ----- Live auction state -----
@@ -48,6 +50,21 @@ export interface AuctionPlayerState {
   soldPrice?: number;
 }
 
+/**
+ * Minimal player details copied into the live lot so screens can render the
+ * player without loading the whole roster (which now lives in the DB).
+ */
+export interface LotPlayer {
+  id: string;
+  name: string;
+  role: PlayerRole;
+  battingStyle: string;
+  bowlingStyle?: string;
+  basePriceValue?: number;
+  image?: string;
+  club?: string;
+}
+
 /** The player presently being auctioned. */
 export interface CurrentLot {
   playerId: string;
@@ -57,6 +74,8 @@ export interface CurrentLot {
   status: LotStatus;
   /** Stack of prior (bid, leadingTeamId) pairs for UNDO within this lot. */
   raises: { bid: number; leadingTeamId: string | null }[];
+  /** Denormalized player details for display (filled on SELECT_PLAYER). */
+  player?: LotPlayer;
 }
 
 /** Full snapshot broadcast to every screen. */

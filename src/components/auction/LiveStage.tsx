@@ -1,8 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Gavel, Radio, User } from "lucide-react";
+import { Gavel, Radio, Sparkles, Trophy, User } from "lucide-react";
 import { players } from "@/data/players";
 import { teams } from "@/data/teams";
 import { DEFAULT_BASE_PRICE, formatAmount, formatMoney } from "@/lib/auction-config";
@@ -17,7 +18,9 @@ export function LiveStage({ state }: { state: AuctionState | null }) {
 
   if (!current) return <IdleStage />;
 
-  const player = playerById.get(current.playerId);
+  // Prefer the player details embedded in the live lot (sourced from the DB);
+  // fall back to the static roster for older snapshots.
+  const player = current.player ?? playerById.get(current.playerId);
   if (!player) return <IdleStage />;
 
   const leadTeam = current.leadingTeamId ? teamById.get(current.leadingTeamId) : null;
@@ -26,6 +29,18 @@ export function LiveStage({ state }: { state: AuctionState | null }) {
   const unsold = current.status === "unsold";
 
   return (
+    <>
+    <AnimatePresence>
+      {sold && leadTeam && (
+        <SoldCelebration
+          key={`${player.id}-sold`}
+          player={player}
+          team={leadTeam}
+          price={current.bid}
+        />
+      )}
+    </AnimatePresence>
+
     <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       {/* Player portrait */}
       <motion.div
@@ -86,6 +101,11 @@ export function LiveStage({ state }: { state: AuctionState | null }) {
           <span className="mx-2 text-white/30">|</span>
           Base {formatMoney(base)}
         </p>
+        {player.club && (
+          <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-gold/80">
+            {player.club}
+          </p>
+        )}
 
         {/* Current bid */}
         <div className="mt-8">
@@ -143,6 +163,167 @@ export function LiveStage({ state }: { state: AuctionState | null }) {
         </div>
       </div>
     </div>
+    </>
+  );
+}
+
+/**
+ * Full-screen SOLD celebration: confetti, a springy stamp, the player blown up
+ * big, and the winning team + price. Shown while the lot's status is "sold".
+ */
+function SoldCelebration({
+  player,
+  team,
+  price,
+}: {
+  player: { name: string; image?: string; role: string };
+  team: (typeof teams)[number];
+  price: number;
+}) {
+  // Confetti pieces — generated once when the celebration mounts.
+  const confetti = useMemo(() => {
+    const colors = ["#F5B700", "#22c55e", "#ffffff", "#38bdf8", team.primary];
+    return Array.from({ length: 70 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: 7 + Math.random() * 11,
+      delay: Math.random() * 0.8,
+      duration: 2.2 + Math.random() * 2,
+      drift: (Math.random() - 0.5) * 160,
+      spin: 180 + Math.random() * 540,
+      color: colors[i % colors.length],
+    }));
+  }, [team.primary]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.4 } }}
+      transition={{ duration: 0.3 }}
+      className="pointer-events-none fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+    >
+      {/* Dim + team-coloured glow */}
+      <div className="absolute inset-0 bg-ink/85 backdrop-blur-sm" />
+      <div
+        className="absolute left-1/2 top-1/2 h-[70vh] w-[70vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[130px]"
+        style={{ backgroundColor: `${team.primary}55` }}
+      />
+
+      {/* Confetti */}
+      <div className="absolute inset-0">
+        {confetti.map((c) => (
+          <motion.span
+            key={c.id}
+            className="absolute top-0 block rounded-[2px]"
+            style={{
+              left: `${c.left}%`,
+              width: c.size,
+              height: c.size * 0.55,
+              backgroundColor: c.color,
+            }}
+            initial={{ y: "-12vh", x: 0, opacity: 0, rotate: 0 }}
+            animate={{
+              y: "112vh",
+              x: c.drift,
+              opacity: [0, 1, 1, 0.9, 0],
+              rotate: c.spin,
+            }}
+            transition={{
+              duration: c.duration,
+              delay: c.delay,
+              repeat: Infinity,
+              ease: "easeIn",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="relative flex flex-col items-center gap-5 px-6 text-center sm:gap-6">
+        {/* SOLD stamp */}
+        <motion.div
+          initial={{ scale: 0, rotate: -24, opacity: 0 }}
+          animate={{ scale: 1, rotate: -7, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.1 }}
+          className="flex items-center gap-3 rounded-2xl border-4 border-green-400 bg-green-400/15 px-7 py-2.5 shadow-[0_0_50px_rgba(74,222,128,0.5)]"
+        >
+          <Gavel className="size-8 text-green-400 sm:size-10" />
+          <span className="font-display text-5xl font-black uppercase tracking-tight text-green-400 sm:text-7xl">
+            Sold!
+          </span>
+        </motion.div>
+
+        {/* Player card, popped big */}
+        {player.image && (
+          <motion.div
+            initial={{ scale: 0.55, opacity: 0, y: 30 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 180, damping: 16, delay: 0.25 }}
+            className="relative aspect-[3/2] w-full max-w-[34rem] overflow-hidden rounded-3xl border-4 shadow-2xl"
+            style={{ borderColor: team.primary }}
+          >
+            <Image
+              src={player.image}
+              alt={player.name}
+              fill
+              sizes="(max-width: 640px) 90vw, 34rem"
+              className="object-cover"
+              priority
+            />
+          </motion.div>
+        )}
+
+        {/* Name */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex items-center gap-3 font-display text-5xl font-extrabold text-white sm:text-7xl"
+        >
+          <Sparkles className="size-7 text-gold sm:size-9" />
+          {player.name}
+          <Sparkles className="size-7 text-gold sm:size-9" />
+        </motion.h1>
+
+        {/* Winning team */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.55 }}
+          className="inline-flex items-center gap-3 rounded-2xl border-2 px-6 py-3"
+          style={{
+            borderColor: team.primary,
+            backgroundColor: `${team.primary}22`,
+          }}
+        >
+          <Trophy className="size-6" style={{ color: team.primary }} />
+          <div className="text-left">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+              Bought by
+            </p>
+            <p className="font-display text-2xl font-black text-white sm:text-3xl">
+              {team.name}
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Price */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 220, damping: 12, delay: 0.7 }}
+          className="mt-1"
+        >
+          <p className="text-gradient-gold font-display text-6xl font-black tabular-nums sm:text-8xl">
+            {formatAmount(price)}
+          </p>
+          <p className="text-sm font-bold uppercase tracking-[0.4em] text-white/50">
+            LKR
+          </p>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
 

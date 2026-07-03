@@ -1,4 +1,4 @@
-import { players } from "@/data/players";
+import { players as staticPlayers } from "@/data/players";
 import { teams } from "@/data/teams";
 import { DEFAULT_BASE_PRICE, TEAM_BUDGET } from "@/lib/auction-config";
 import type {
@@ -7,28 +7,49 @@ import type {
   AuctionState,
   AuctionTeamState,
   CurrentLot,
+  LotPlayer,
+  Player,
 } from "@/types";
 
 /**
  * Pure auction logic. Takes the current state + an action and returns the next
  * state — no I/O. Persistence (Supabase) and transport (Realtime) live elsewhere,
  * so the same rules run identically on the server and in tests.
+ *
+ * The roster (players) is injected so it can come from the DB; teams remain
+ * static. When no roster is passed it defaults to the static `@/data/players`.
  */
 
-const playerById = new Map(players.map((p) => [p.id, p]));
 const teamById = new Map(teams.map((t) => [t.id, t]));
 
-function basePriceOf(playerId: string): number {
-  return playerById.get(playerId)?.basePriceValue ?? DEFAULT_BASE_PRICE;
+function indexPlayers(roster: Player[]): Map<string, Player> {
+  return new Map(roster.map((p) => [p.id, p]));
+}
+
+function basePriceOf(player: Player | undefined): number {
+  return player?.basePriceValue ?? DEFAULT_BASE_PRICE;
+}
+
+function toLotPlayer(p: Player): LotPlayer {
+  return {
+    id: p.id,
+    name: p.name,
+    role: p.role,
+    battingStyle: p.battingStyle,
+    bowlingStyle: p.bowlingStyle,
+    basePriceValue: p.basePriceValue ?? DEFAULT_BASE_PRICE,
+    image: p.image,
+    club: p.club,
+  };
 }
 
 /** A clean snapshot with every team at full purse and every player available. */
-export function initialState(): AuctionState {
+export function initialState(roster: Player[] = staticPlayers): AuctionState {
   const teamStates: Record<string, AuctionTeamState> = {};
   for (const t of teams) teamStates[t.id] = { spent: 0, playerIds: [] };
 
   const playerStates: Record<string, AuctionPlayerState> = {};
-  for (const p of players) playerStates[p.id] = { status: "available" };
+  for (const p of roster) playerStates[p.id] = { status: "available" };
 
   return {
     version: 0,
@@ -43,7 +64,10 @@ export function initialState(): AuctionState {
  * Heal a snapshot read from the DB: ensure every roster team/player has an entry
  * even if the roster grew since the row was written.
  */
-export function normalize(state: AuctionState): AuctionState {
+export function normalize(
+  state: AuctionState,
+  roster: Player[] = staticPlayers,
+): AuctionState {
   const next: AuctionState = {
     version: state.version ?? 0,
     current: state.current ?? null,
@@ -54,7 +78,7 @@ export function normalize(state: AuctionState): AuctionState {
   for (const t of teams) {
     if (!next.teams[t.id]) next.teams[t.id] = { spent: 0, playerIds: [] };
   }
-  for (const p of players) {
+  for (const p of roster) {
     if (!next.players[p.id]) next.players[p.id] = { status: "available" };
   }
   return next;
@@ -78,8 +102,13 @@ function bump(state: AuctionState, event: string | null): AuctionState {
 }
 
 /** Apply one auctioneer action. Returns the next state (or the same on no-op/error). */
-export function reduce(input: AuctionState, action: AuctionAction): ReduceResult {
-  const state = normalize(input);
+export function reduce(
+  input: AuctionState,
+  action: AuctionAction,
+  roster: Player[] = staticPlayers,
+): ReduceResult {
+  const playerById = indexPlayers(roster);
+  const state = normalize(input, roster);
 
   switch (action.type) {
     case "SELECT_PLAYER": {
@@ -90,10 +119,11 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
       const player = playerById.get(playerId)!;
       const lot: CurrentLot = {
         playerId,
-        bid: basePriceOf(playerId),
+        bid: basePriceOf(player),
         leadingTeamId: null,
         status: "live",
         raises: [],
+        player: toLotPlayer(player),
       };
       return {
         ok: true,
@@ -174,7 +204,8 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
       }
       const teamId = current.leadingTeamId;
       const price = current.bid;
-      const player = playerById.get(current.playerId)!;
+      const playerName =
+        current.player?.name ?? playerById.get(current.playerId)?.name ?? "Player";
       const team = teamById.get(teamId)!;
 
       const teamState: AuctionTeamState = {
@@ -196,7 +227,7 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
             teams: { ...state.teams, [teamId]: teamState },
             players: { ...state.players, [current.playerId]: playerState },
           },
-          `SOLD! ${player.name} → ${team.name} for ${price.toLocaleString("en-LK")}`,
+          `SOLD! ${playerName} → ${team.name} for ${price.toLocaleString("en-LK")}`,
         ),
       };
     }
@@ -206,7 +237,8 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
       if (!current || current.status !== "live") {
         return { ok: false, error: "No live lot", state, changed: false };
       }
-      const player = playerById.get(current.playerId)!;
+      const playerName =
+        current.player?.name ?? playerById.get(current.playerId)?.name ?? "Player";
       const playerState: AuctionPlayerState = { status: "unsold" };
       return {
         ok: true,
@@ -217,7 +249,7 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
             current: { ...current, status: "unsold" },
             players: { ...state.players, [current.playerId]: playerState },
           },
-          `${player.name} goes UNSOLD`,
+          `${playerName} goes UNSOLD`,
         ),
       };
     }
@@ -231,7 +263,7 @@ export function reduce(input: AuctionState, action: AuctionAction): ReduceResult
     }
 
     case "RESET_ALL": {
-      return { ok: true, changed: true, state: initialState() };
+      return { ok: true, changed: true, state: initialState(roster) };
     }
 
     default:

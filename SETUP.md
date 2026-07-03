@@ -5,10 +5,14 @@ Two apps:
 - **`kpl`** — big screen + auction API (this folder)
 - **`kpl-admin`** — auctioneer control panel (`../kpl-admin`)
 
-The roster (teams + 208 players) is **static** in the code. Only the **live
-auction state** (current bid, leading team, sold prices, team purses) lives in
-**Supabase**, pushed to every screen over Supabase Realtime. This is what makes
-it work on Vercel (serverless can't hold live state in memory).
+**Teams** are static in the code. **Players** live in the Supabase `players`
+table (so they can be added/edited without a redeploy). The **live auction
+state** (current bid, leading team, sold prices, team purses) is one JSON row in
+the `auction_snapshot` table, pushed to every screen over Supabase Realtime —
+this is what makes it work on Vercel (serverless can't hold live state in memory).
+
+The server reads/writes Supabase over the **direct Postgres connection**
+(`DATABASE_URL`); the browser only needs the **anon key** for Realtime.
 
 ## 1. Create a Supabase project
 
@@ -25,12 +29,15 @@ Supabase dashboard → **SQL Editor** → New query → paste the contents of
 
 ## 3. Local environment
 
-**`kpl/.env.local`**
+**`kpl/.env.local`** — `DATABASE_URL`/`DIRECT_URL` come from Supabase → Project
+Settings → **Database** → Connection string (use the **pooler** strings;
+URL-encode the password). The anon key is only for Realtime.
 
 ```
+DATABASE_URL="postgresql://postgres.PROJECT:PASSWORD@...pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.PROJECT:PASSWORD@...pooler.supabase.com:5432/postgres"
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 **`kpl-admin/.env.local`**
@@ -69,8 +76,19 @@ Set the same env vars in each project's **Settings → Environment Variables**:
 That's it — both apps read live state straight from Supabase, so the auction
 stays in sync across every device.
 
-## Player photos
+## Adding players
 
-Drop player images in `kpl/public/auction/` and point each player's `image`
-field (in `src/data/players.ts`) at `/auction/<file>`. Players without an image
-show a placeholder automatically.
+Players live in the `players` table. Drop the photo in `kpl/public/auction/`
+and insert a row (SQL Editor or psql via `DIRECT_URL`):
+
+```sql
+insert into public.players
+  (id, name, role, batting_style, bowling_style, base_price, base_price_value, image, sort_order)
+values
+  ('p-ahmed', 'Ahmed', 'Bowler', 'Right-hand bat', 'Right-arm fast',
+   'Base 2,000 LKR', 2000, '/auction/ahmed.jpg', 1);
+```
+
+`role` must be one of `Batsman`, `Bowler`, `All-Rounder`, `Wicket Keeper`.
+Players without an `image` show a placeholder automatically. The new player
+appears in the auctioneer roster on its next load — no redeploy needed.
