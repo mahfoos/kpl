@@ -5,6 +5,7 @@ import { LedTicker } from "@/components/auction/LedTicker";
 import { TopBillboard } from "@/components/auction/TopBillboard";
 import { LiveStage } from "@/components/auction/LiveStage";
 import { TeamPurseStrip } from "@/components/auction/TeamPurseStrip";
+import { ScreenScaleControl } from "@/components/auction/ScreenScaleControl";
 import { useAuctionState } from "@/hooks/useAuctionState";
 
 export default function LiveScreen() {
@@ -18,7 +19,9 @@ export default function LiveScreen() {
   ];
 
   return (
-    <main className="flex min-h-[100svh] flex-col bg-ink">
+    <>
+    <ScreenScaleControl targetId="big-screen" />
+    <main id="big-screen" className="flex min-h-[100svh] flex-col bg-ink">
       <LedTicker items={tickerItems} />
       <TopBillboard />
 
@@ -54,5 +57,6 @@ export default function LiveScreen() {
         />
       </section>
     </main>
+    </>
   );
 }

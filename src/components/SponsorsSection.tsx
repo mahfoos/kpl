@@ -14,6 +14,8 @@ const tierStyles: Record<string, string> = {
 };
 
 export function SponsorsSection() {
+  if (sponsors.length === 0) return null;
+
   return (
     <section id="sponsors" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">

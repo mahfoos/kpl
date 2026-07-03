@@ -48,25 +48,29 @@ function Segment() {
         </div>
       </div>
 
-      <Dot />
-
-      {/* Partners */}
-      <p className="font-display text-3xl font-black uppercase tracking-widest text-white/70 sm:text-4xl">
-        Partners
-      </p>
-      {sponsors.map((s) => (
-        <div key={s.id} className="flex items-center gap-16 whitespace-nowrap">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold/80">
-              {s.tier}
-            </p>
-            <p className="font-display text-3xl font-extrabold uppercase tracking-tight text-white sm:text-4xl">
-              {s.name}
-            </p>
-          </div>
+      {sponsors.length > 0 && (
+        <>
           <Dot />
-        </div>
-      ))}
+
+          {/* Partners */}
+          <p className="font-display text-3xl font-black uppercase tracking-widest text-white/70 sm:text-4xl">
+            Partners
+          </p>
+          {sponsors.map((s) => (
+            <div key={s.id} className="flex items-center gap-16 whitespace-nowrap">
+              <div className="text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold/80">
+                  {s.tier}
+                </p>
+                <p className="font-display text-3xl font-extrabold uppercase tracking-tight text-white sm:text-4xl">
+                  {s.name}
+                </p>
+              </div>
+              <Dot />
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
