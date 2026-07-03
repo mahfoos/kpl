@@ -389,23 +389,6 @@ function IdleStage() {
         </p>
         <CountdownTimer targetIso={MEGA_AUCTION_DATE} size="lg" className="mx-auto" />
       </div>
-
-      {/* Chief guest strip */}
-      <div className="glass flex items-center gap-4 rounded-2xl px-5 py-3">
-        <Image
-          src="/imran-maharoof.jpg"
-          alt="Imran Maharoof"
-          width={56}
-          height={56}
-          className="size-14 rounded-full object-cover object-top ring-2 ring-gold/50"
-        />
-        <div className="text-left">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">
-            Chief Guest
-          </p>
-          <p className="font-display text-lg font-bold text-white">Imran Maharoof</p>
-        </div>
-      </div>
     </div>
   );
 }

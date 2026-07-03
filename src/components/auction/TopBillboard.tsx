@@ -8,17 +8,30 @@ import { sponsors } from "@/data/sponsors";
  * photo) and the KPL sponsors, in large text. Duplicated for a seamless loop.
  */
 export function TopBillboard() {
+  // With sponsors there's enough content to scroll (duplicated for a seamless
+  // loop). Without them it's just the chief guest — show it static and centred
+  // so it doesn't read as a duplicate.
+  const scroll = sponsors.length > 0;
+
   return (
     <div className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-navy-light/60 to-ink py-5">
-      <div
-        className="flex w-max animate-marquee items-center gap-16 will-change-transform"
-        style={{ animationDuration: "38s" }}
-      >
-        <Segment />
-        <Segment />
-      </div>
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-ink to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-gradient-to-l from-ink to-transparent" />
+      {scroll ? (
+        <>
+          <div
+            className="flex w-max animate-marquee items-center gap-16 will-change-transform"
+            style={{ animationDuration: "38s" }}
+          >
+            <Segment />
+            <Segment />
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-ink to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-gradient-to-l from-ink to-transparent" />
+        </>
+      ) : (
+        <div className="flex justify-center px-4">
+          <Segment />
+        </div>
+      )}
     </div>
   );
 }
