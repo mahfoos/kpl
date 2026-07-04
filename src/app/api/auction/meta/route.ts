@@ -6,6 +6,7 @@ import type { AuctionMeta } from "@/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 12;
 
 /** Roster + tuning the standalone auctioneer app loads on startup. */
 export async function GET() {

@@ -37,7 +37,17 @@ function toPlayer(r: PlayerRow): Player {
   };
 }
 
+// The roster changes rarely (seed script), but `/api/auction/state` is polled
+// once a second per screen. Cache it per instance for a few seconds so each poll
+// only runs the live-snapshot query, not a full roster scan — this cuts DB load
+// (and pooler connections) in half.
+let cache: { at: number; players: Player[] } | null = null;
+const ROSTER_TTL_MS = 5000;
+
 export async function fetchPlayers(): Promise<Player[]> {
+  const now = Date.now();
+  if (cache && now - cache.at < ROSTER_TTL_MS) return cache.players;
+
   const sql = getSql();
   if (!sql) return staticPlayers;
   try {
@@ -47,7 +57,9 @@ export async function fetchPlayers(): Promise<Player[]> {
       from public.players
       order by sort_order, name
     `;
-    return rows.length ? rows.map(toPlayer) : staticPlayers;
+    const players = rows.length ? rows.map(toPlayer) : staticPlayers;
+    cache = { at: now, players };
+    return players;
   } catch (err) {
     console.error("[players-db] falling back to static roster:", err);
     return staticPlayers;

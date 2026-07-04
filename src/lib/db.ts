@@ -16,7 +16,11 @@ export function getSql(): Sql | null {
   if (!sql) {
     sql = postgres(url, {
       prepare: false,
-      max: 5,
+      // Serverless + pgbouncer (Supabase transaction pooler): keep ONE connection
+      // per function instance. With many instances polling, max:5 exhausts the
+      // pooler ("max clients reached") and requests hang pending. 1 is the safe
+      // serverless setting.
+      max: 1,
       idle_timeout: 20,
       connect_timeout: 10,
     });

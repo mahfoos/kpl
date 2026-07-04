@@ -6,6 +6,7 @@ import type { AuctionAction } from "@/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 12;
 
 export async function POST(request: Request) {
   let body: AuctionAction;
