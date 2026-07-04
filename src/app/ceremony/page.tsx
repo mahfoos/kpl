@@ -18,6 +18,7 @@ import { teams } from "@/data/teams";
 import { retainedByTeam, type RetainedPlayer } from "@/data/retained";
 import { ownerByTeam, type TeamOwner } from "@/data/owners";
 import { mediaTeam, type MediaMember } from "@/data/media-team";
+import { committee, type CommitteeMember } from "@/data/committee";
 import { ScreenScaleControl } from "@/components/auction/ScreenScaleControl";
 import type { Team } from "@/types";
 
@@ -34,6 +35,7 @@ type Scene =
     }
   | { type: "person"; eyebrow: string; name: string; role: string; image: string }
   | { type: "mediaTeam"; members: MediaMember[] }
+  | { type: "committee"; members: CommitteeMember[] }
   | { type: "teamLogo"; team: Team; index: number; total: number }
   | { type: "owner"; team: Team; owner: TeamOwner }
   | { type: "retained"; team: Team; players: RetainedPlayer[] }
@@ -48,9 +50,11 @@ function buildScenes(): Scene[] {
     eyebrow: "Welcome",
     title: "The KPL Committee",
     subtitle: "Kinniya Premier League — Organising Committee",
-    note: "Send committee names / photos to fill this slide.",
     icon: <Users className="size-10" />,
   });
+  for (let c = 0; c < committee.length; c += 3) {
+    scenes.push({ type: "committee", members: committee.slice(c, c + 3) });
+  }
   scenes.push({
     type: "title",
     eyebrow: "Governing Body",
@@ -205,6 +209,8 @@ function SceneView({ scene }: { scene: Scene }) {
       return <PersonScene scene={scene} />;
     case "mediaTeam":
       return <MediaTeamScene scene={scene} />;
+    case "committee":
+      return <CommitteeScene scene={scene} />;
     case "teamLogo":
       return <TeamLogoScene scene={scene} />;
     case "owner":
@@ -439,6 +445,58 @@ function TeamLogoScene({ scene }: { scene: Extract<Scene, { type: "teamLogo" }> 
       >
         {team.city}
       </motion.p>
+    </div>
+  );
+}
+
+function CommitteeScene({ scene }: { scene: Extract<Scene, { type: "committee" }> }) {
+  const { members } = scene;
+  return (
+    <div className="flex flex-col items-center text-center">
+      <motion.p
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        className="mb-1 text-xs font-bold uppercase tracking-[0.5em] text-gold"
+      >
+        KPL 2026
+      </motion.p>
+      <motion.h2
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        custom={1}
+        className="text-gradient-gold mb-8 font-display text-4xl font-black uppercase sm:text-6xl"
+      >
+        Committee
+      </motion.h2>
+      <div className="flex flex-wrap items-end justify-center gap-6">
+        {members.map((m, idx) => (
+          <motion.div
+            key={m.name}
+            initial={{ opacity: 0, y: 40, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 170,
+              damping: 17,
+              delay: 0.2 + idx * 0.15,
+            }}
+            className="flex flex-col items-center"
+          >
+            <div className="overflow-hidden rounded-2xl border-2 border-gold/40 shadow-2xl">
+              <Image
+                src={m.card}
+                alt={`${m.name} — ${m.role}`}
+                width={1024}
+                height={1280}
+                className="h-[56vh] max-h-[540px] w-auto object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
