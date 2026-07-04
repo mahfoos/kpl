@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
-  Gavel,
   ShieldCheck,
   Sparkles,
   Trophy,
@@ -31,6 +30,7 @@ type Scene =
       subtitle?: string;
       note?: string;
       icon: ReactNode;
+      image?: string;
     }
   | { type: "person"; eyebrow: string; name: string; role: string; image: string }
   | { type: "mediaTeam"; members: MediaMember[] }
@@ -56,8 +56,8 @@ function buildScenes(): Scene[] {
     eyebrow: "Governing Body",
     title: "Kinniya Cricket Board",
     subtitle: "KCB",
-    note: "Send the KCB logo to drop it in here.",
     icon: <ShieldCheck className="size-10" />,
+    image: "/kcb-logo.png",
   });
   scenes.push({
     type: "person",
@@ -65,14 +65,6 @@ function buildScenes(): Scene[] {
     name: "Imran Maharoof",
     role: "Member of Parliament (MP)",
     image: "/imran-maharoof.jpg",
-  });
-  scenes.push({
-    type: "title",
-    eyebrow: "Match Officials",
-    title: "Our Umpires",
-    subtitle: "Fair play, every ball",
-    note: "Send umpire names / photos to fill this slide.",
-    icon: <Gavel className="size-10" />,
   });
   if (mediaTeam.length) scenes.push({ type: "mediaTeam", members: mediaTeam });
 
@@ -275,14 +267,32 @@ function IntroScene() {
 function TitleScene({ scene }: { scene: Extract<Scene, { type: "title" }> }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7, rotate: -8 }}
-        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 220, damping: 14 }}
-        className="grid size-24 place-items-center rounded-3xl border border-gold/30 bg-gold/10 text-gold"
-      >
-        {scene.icon}
-      </motion.div>
+      {scene.image ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 170, damping: 15 }}
+          className="relative size-56 overflow-hidden rounded-[2rem] border-4 border-electric/50 shadow-[0_0_70px_-10px_rgba(56,189,248,0.7)] sm:size-72"
+        >
+          <Image
+            src={scene.image}
+            alt={scene.title}
+            fill
+            sizes="18rem"
+            className="object-cover"
+            priority
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7, rotate: -8 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 220, damping: 14 }}
+          className="grid size-24 place-items-center rounded-3xl border border-gold/30 bg-gold/10 text-gold"
+        >
+          {scene.icon}
+        </motion.div>
+      )}
       <motion.p
         variants={rise}
         initial="hidden"
