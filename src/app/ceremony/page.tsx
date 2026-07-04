@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { teams } from "@/data/teams";
 import { retainedByTeam, type RetainedPlayer } from "@/data/retained";
+import { ownerByTeam, type TeamOwner } from "@/data/owners";
+import { mediaTeam, type MediaMember } from "@/data/media-team";
 import { ScreenScaleControl } from "@/components/auction/ScreenScaleControl";
 import type { Team } from "@/types";
 
@@ -31,7 +33,9 @@ type Scene =
       icon: ReactNode;
     }
   | { type: "person"; eyebrow: string; name: string; role: string; image: string }
+  | { type: "mediaTeam"; members: MediaMember[] }
   | { type: "teamLogo"; team: Team; index: number; total: number }
+  | { type: "owner"; team: Team; owner: TeamOwner }
   | { type: "retained"; team: Team; players: RetainedPlayer[] }
   | { type: "closing" };
 
@@ -70,6 +74,7 @@ function buildScenes(): Scene[] {
     note: "Send umpire names / photos to fill this slide.",
     icon: <Gavel className="size-10" />,
   });
+  if (mediaTeam.length) scenes.push({ type: "mediaTeam", members: mediaTeam });
 
   scenes.push({
     type: "title",
@@ -80,6 +85,8 @@ function buildScenes(): Scene[] {
 
   teams.forEach((team, i) => {
     scenes.push({ type: "teamLogo", team, index: i, total: teams.length });
+    const owner = ownerByTeam[team.id];
+    if (owner) scenes.push({ type: "owner", team, owner });
     const players = retainedByTeam[team.id] ?? [];
     if (players.length) scenes.push({ type: "retained", team, players });
   });
@@ -204,8 +211,12 @@ function SceneView({ scene }: { scene: Scene }) {
       return <TitleScene scene={scene} />;
     case "person":
       return <PersonScene scene={scene} />;
+    case "mediaTeam":
+      return <MediaTeamScene scene={scene} />;
     case "teamLogo":
       return <TeamLogoScene scene={scene} />;
+    case "owner":
+      return <OwnerScene scene={scene} />;
     case "retained":
       return <RetainedScene scene={scene} />;
     case "closing":
@@ -418,6 +429,103 @@ function TeamLogoScene({ scene }: { scene: Extract<Scene, { type: "teamLogo" }> 
       >
         {team.city}
       </motion.p>
+    </div>
+  );
+}
+
+function MediaTeamScene({ scene }: { scene: Extract<Scene, { type: "mediaTeam" }> }) {
+  const { members } = scene;
+  return (
+    <div className="flex flex-col items-center text-center">
+      <motion.p
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        className="mb-1 text-xs font-bold uppercase tracking-[0.5em] text-gold"
+      >
+        Committee Team
+      </motion.p>
+      <motion.h2
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        custom={1}
+        className="text-gradient-gold mb-8 font-display text-4xl font-black uppercase sm:text-6xl"
+      >
+        Media Team
+      </motion.h2>
+      <div className="flex flex-wrap items-center justify-center gap-6">
+        {members.map((m, idx) => (
+          <motion.div
+            key={m.name}
+            initial={{ opacity: 0, y: 40, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 170,
+              damping: 17,
+              delay: 0.2 + idx * 0.15,
+            }}
+            className="overflow-hidden rounded-2xl border-2 border-gold/40 shadow-2xl"
+          >
+            <Image
+              src={m.card}
+              alt={`${m.name} — media team`}
+              width={1024}
+              height={1280}
+              className="h-[56vh] max-h-[540px] w-auto object-contain"
+              priority
+            />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OwnerScene({ scene }: { scene: Extract<Scene, { type: "owner" }> }) {
+  const { team, owner } = scene;
+  return (
+    <div className="flex flex-col items-center text-center">
+      {/* team-coloured glow */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[55vh] w-[55vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
+        style={{ backgroundColor: `${team.primary}44` }}
+      />
+      <motion.p
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        className="mb-1 text-xs font-bold uppercase tracking-[0.5em] text-gold"
+      >
+        Team Owner
+      </motion.p>
+      <motion.h2
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        custom={1}
+        className="mb-6 font-display text-3xl font-extrabold uppercase sm:text-5xl"
+        style={{ color: team.primary }}
+      >
+        {team.name}
+      </motion.h2>
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 160, damping: 16, delay: 0.15 }}
+        className="overflow-hidden rounded-2xl border-2 shadow-2xl"
+        style={{ borderColor: `${team.primary}88`, boxShadow: `0 0 70px -12px ${team.primary}` }}
+      >
+        <Image
+          src={owner.card}
+          alt={`${owner.name} — team owner`}
+          width={1024}
+          height={1280}
+          className="h-[62vh] max-h-[620px] w-auto object-contain"
+          priority
+        />
+      </motion.div>
     </div>
   );
 }
